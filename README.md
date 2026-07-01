@@ -1,11 +1,9 @@
 # Multi-Modal, Multi-Environment Machine Teaching for Robust Reward Learning
 
-Code for the paper **"Multi-Modal, Multi-Environment Machine Teaching for Robust Reward Learning"**
-(under review for RLC 2026, to be published in RLJ).
+Code for the paper **"Multi-Modal, Multi-Environment Machine Teaching for Robust Reward Learning"**,
+accepted at RLC 2026, to be published in RLJ.
 
-> Authors: Anonymous authors (paper under double-blind review). This README omits author
-> names to preserve anonymity during review; it will be updated with author information
-> once the review process concludes.
+**Authors:** Ali Larian, Qian Lin, Chang Zong Wu, Daniel S. Brown
 
 ## What this is about
 
