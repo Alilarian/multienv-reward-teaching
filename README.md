@@ -5,26 +5,81 @@ accepted at RLC 2026, to be published in RLJ.
 
 **Authors:** Ali Larian, Qian Lin, Chang Zong Wu, Daniel S. Brown
 
-## What this is about
+## Introduction
 
 Inverse reinforcement learning (IRL) infers a reward function from human feedback, but
 rewards taught in a single environment tend to overfit to that environment's dynamics and
 fail to generalize elsewhere. This repo studies **machine teaching for reward learning
-across multiple environments and multiple feedback modalities** (demonstrations,
-pairwise comparisons, corrections, and emergency-stops/E-stops):
+across multiple environments and multiple feedback modalities**: demonstrations,
+pairwise comparisons, corrections, and emergency-stops (E-stops). Each modality can be
+viewed as a trajectory comparison — the teacher indicates a preferred trajectory over an
+alternative, which induces a linear constraint on the reward parameters:
 
-- An analysis of how different feedback modalities constrain the feasible reward region
-  (the *generalized behavioral equivalence class*, gBEC), both in the unlimited-data
-  regime and under tight feedback budgets.
-- A formal result showing that reward identifiability is **environment-dependent**: even
-  unlimited feedback in one MDP can leave residual reward ambiguity that only shows up
-  when the agent is deployed in a different environment.
-- **Hierarchical Set Cover Optimal Teaching (HSCOT)**, an algorithm that first greedily
-  selects a small set of informative training environments and then selects
-  low-cost feedback queries within them, so that the resulting reward generalizes to
-  held-out environments.
-- Empirical evaluation on GridWorld and MiniGrid LavaWorld domains, comparing HSCOT
-  against a uniform-teaching baseline on held-out regret and constraint coverage.
+<p align="center">
+  <img src="docs/figures/fig1_feedback_modalities.png" alt="Human feedback modalities as trajectory comparisons: demonstration, comparison, E-stop, correction" width="850">
+</p>
+
+The teacher (human or expert policy) is assumed to select feedback in a
+*reward-rational* way, so demonstrations, comparisons, corrections, and E-stops all reduce
+to the same underlying constraint interpretation, just with different structure (e.g.
+demonstrations and corrections share an initial state with their alternative; comparisons
+can contrast arbitrary trajectory pairs; E-stops only compare a trajectory against a
+halted prefix of itself). The paper analyzes how this structural difference affects how
+much each modality constrains the feasible reward region, in both the unlimited-data and
+finite-budget regimes, and builds a multi-environment teaching algorithm on top of it.
+
+## Results
+
+### Theoretical results
+
+Reward identifiability is **environment-dependent**: even *unlimited* feedback collected
+in a single MDP can leave residual reward ambiguity that only becomes visible once the
+agent is deployed in a different environment with different dynamics. The figure below
+illustrates this with two GridWorld MDPs that share the same reward features but differ
+in layout — the feasible reward region (generalized behavioral equivalence class, gBEC)
+recovered from MDP 2 alone is strictly larger than the one recovered from MDP 1 alone
+(`gBEC_1 ⊊ gBEC_2`), so teaching in only one of the two environments leaves reward
+ambiguity that the other would have resolved:
+
+<p align="center">
+  <img src="docs/figures/fig4_env_dependent_ambiguity.png" alt="Environment-dependent reward ambiguity: two gridworld MDPs with different feasible reward regions" width="850">
+</p>
+
+We also show that, in the unlimited-data regime, comparison feedback imposes strictly
+stronger global constraints on the feasible reward region than demonstrations,
+corrections, or E-stops — while under tight finite budgets, demonstrations are the most
+constraint-efficient per query, since each one implicitly encodes many optimality
+constraints at once.
+
+### Algorithm and numerical results
+
+Motivated by these results, we introduce **Hierarchical Set Cover Optimal Teaching
+(HSCOT)**: a two-stage greedy algorithm that (1) selects a small set of training
+environments whose dynamics expose complementary reward constraints, then (2) selects
+low-cost feedback queries within those environments to efficiently cover the resulting
+constraint set. This is implemented in `teaching/two_stage_scot.py` and
+`teaching/two_stage_scot_minigrid.py`, and evaluated end-to-end by the scripts in
+`experiments/`.
+
+On GridWorld and MiniGrid LavaWorld, HSCOT is compared against a uniform-teaching
+baseline under identical feedback budgets, evaluating the learned reward's regret on
+held-out environments never seen during teaching:
+
+<p align="center">
+  <img src="docs/figures/fig5_heldout_regret.png" alt="Held-out regret: HSCOT vs. uniform teaching on GridWorld and LavaMiniGrid" width="850">
+</p>
+
+HSCOT also recovers a much larger fraction of the full constraint set achievable across
+the training environments, under the same query budget:
+
+<p align="center">
+  <img src="docs/figures/fig6_constraint_coverage.png" alt="Constraint coverage: HSCOT vs. uniform teaching on GridWorld and LavaMiniGrid" width="850">
+</p>
+
+HSCOT consistently achieves lower held-out regret, near-complete constraint coverage, and
+uses fewer environments than uniform teaching to do it — see the paper for the full
+numerical results, including the mixed-modality (demonstrations + one other feedback
+type) setting and the per-environment teaching maps in the appendix.
 
 ## Repository layout
 
