@@ -45,6 +45,12 @@ ambiguity that the other would have resolved:
   <img src="docs/figures/fig4_env_dependent_ambiguity.png" alt="Environment-dependent reward ambiguity: two gridworld MDPs with different feasible reward regions" width="850">
 </p>
 
+This asymmetry stems purely from differences in environment layout, not from a lack of
+feedback; a sweep over 200 randomly sampled 2x3 gridworld layouts (varying both the
+number of gray-feature cells and the terminal-state position) confirms that the size of
+the feasible reward region is layout-dependent rather than a property of one hand-picked
+example (`appendix/layout_sweep.py`, reproducing Appendix Figures 9-10).
+
 We also show that, in the unlimited-data regime, comparison feedback imposes strictly
 stronger global constraints on the feasible reward region than demonstrations,
 corrections, or E-stops — while under tight finite budgets, demonstrations are the most
@@ -99,9 +105,10 @@ results_chpc/       Where cluster results land locally (raw JSON/PNG/PDF outputs
                     gitignored and regenerable; the two analysis/plotting scripts that
                     read them, visualize_main.ipynb and visualize_mini_seeds.py, are
                     tracked)
-appendix/           Standalone notebooks reproducing supplementary paper figures
+appendix/           Standalone notebooks/scripts reproducing supplementary paper figures
                     (environment-dependent gBEC illustration; per-budget feasible-region
-                    volume sweep across feedback modalities)
+                    volume sweep across feedback modalities; layout sweep over 200
+                    randomly sampled gridworld layouts)
 test/               Unit tests
 ```
 
@@ -213,6 +220,19 @@ jupyter nbconvert --to notebook --execute --inplace budget_sweep_analysis.ipynb
 (two GridWorld MDPs sharing features but differing in layout, showing
 `gBEC(MDP1) ⊊ gBEC(MDP2)`). `budget_sweep_analysis.ipynb` reproduces the per-budget
 feasible-region-volume sweep across feedback modalities.
+
+`layout_sweep.py` is a plain script (not a notebook) that reproduces the 200-layout
+generalization of the gBEC illustration: it samples 2x3 gridworld layouts (40 per
+red-cell count, k = 1..5, with the terminal state placed independently of cell color),
+solves each with value iteration, derives its gBEC constraints, and renders both a
+layout gallery and a feasible-region gallery, plus a summary plot of feasible-region
+area vs. red-cell count. Run with:
+
+```bash
+python appendix/layout_sweep.py
+```
+
+Outputs are written to `appendix/layout_sweep_outputs/`.
 
 ## Tests
 
